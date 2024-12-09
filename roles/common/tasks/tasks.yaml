@@ -1,0 +1,10 @@
+- name: Install dependencies
+  apt: 
+    name: "{{ item.name }}"
+    state: present
+    update_cache: yes
+  with_items: "{{ packages | default([]) }}"
+
+# - name: Add user 
+#   user:
+#     name: toto

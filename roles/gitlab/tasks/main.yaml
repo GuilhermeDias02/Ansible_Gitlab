@@ -1,0 +1,56 @@
+- name: Install gitlab dependencies
+  apt:
+    name: "{{ item.name }}"
+    state: present
+    update_cache: yes
+  become: true
+  with_items: "{{ packages_gitlab | default([]) }}"
+
+- name: Install Gitlab
+  block:
+    - name: Gitlab script
+      ansible.builtin.command:
+        cmd: "wget https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh"
+    - name: Gitlab script
+      ansible.builtin.command:
+        cmd: "bash script.deb.sh"
+    - name: Installation
+      apt:
+        name: gitlab-ee
+        state: present
+        update_cache: yes
+  become: true
+
+- name: Update domain name in /etc/gitlab/gitlab.rb 
+  ansible.builtin.lineinfile:
+    path: "/etc/gitlab/gitlab.rb"
+    regexp: '^external_url'
+    line: 'external_url "http://gitlab.example.com"'
+    backup: yes
+  become: true
+
+# - name: Ensure /etc/hosts exists
+#   ansible.builtin.file:
+#     path: /etc/hosts
+#     state: touch
+#     owner: root
+#     group: root
+#     mode: '0644'
+#   become: true
+
+# - name: Add host in /etc/hosts
+#   ansible.builtin.lineinfile:
+#     path: /etc/hosts
+#     line: "192.168.240.129 gitlab.example.com"
+#     state: present
+#   become: true
+
+- name: Reconfigure Gilab
+  ansible.builtin.command:
+    cmd: "gitlab-ctl reconfigure"
+  become: true
+
+- name: Start Gilab
+  ansible.builtin.command:
+    cmd: "gitlab-ctl start"
+  become: true

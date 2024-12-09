@@ -1,0 +1,7 @@
+packages_gitlab:
+  - name: perl
+  - name: postfix
+  - name: git
+  - name: wget
+  - name: vim
+  - name: curl

@@ -1,0 +1,21 @@
+- name: Create postgresql databases
+  community.postgresql.postgresql_db:
+    name: "{{item.name}}"
+    state: present
+  with_items: "{{db_names | default([])}}"
+
+- name: Create a user
+  community.postgresql.postgresql_user:
+    name: "{{db_user}}"
+    password: "{{db_user}}"
+    state: present
+    login: true
+
+- name: Grant privileges to the user
+  community.postgresql.postgresql_privs:
+    database: "{{item.name}}"
+    roles: "{{db_user}}"
+    type: database
+    privs: ALL
+    state: present
+  with_items: "{{db_names | default([])}}"

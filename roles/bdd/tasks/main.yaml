@@ -1,0 +1,59 @@
+- name: Install postgresql
+  apt:
+    name: "{{ item.name }}"
+    state: present
+    update_cache: yes
+  with_items: "{{ packages_postgresql | default([]) }}"
+  become: true
+
+- name: Start database service
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Replace 127.0.0.1/32 with 0.0.0.0/0 in pg_hba.conf
+  become_user: root
+  ansible.builtin.replace:
+    path: /etc/postgresql/15/main/pg_hba.conf
+    regexp: '127\.0\.0\.1/32'
+    replace: "0.0.0.0/0"
+  become: true
+
+- name: Replace local all postgres trust with local all postgres peer
+  ansible.builtin.replace:
+    path: /etc/postgresql/15/main/pg_hba.conf
+    regexp: 'peer'
+    replace: "trust"
+    backup: yes
+  become: true
+
+- name: Restart PostgreSQL
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted
+
+- name: Create a user
+  community.postgresql.postgresql_user:
+    name: "{{db_user}}"
+    password: "{{db_user}}"
+    state: present
+  become: true
+
+- name: Create postgresql databases
+  community.postgresql.postgresql_db:
+    name: "{{item.name}}"
+    state: present
+  with_items: "{{db_names | default([])}}"
+  become: true
+  # notify: Grant privileges to the user
+
+- name: Grant privileges to the user
+  community.postgresql.postgresql_privs:
+    database: "{{item.name}}"
+    roles: "{{db_user}}"
+    type: database
+    privs: ALL
+    state: present
+  with_items: "{{db_names | default([])}}"
+  become: true

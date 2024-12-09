@@ -1,0 +1,12 @@
+- name: postgresql setup
+  hosts: db
+  roles:
+    - bdd
+
+- name: gitlab setup
+  hosts: gitlabHost
+  environment:
+    LC_CTYPE: "en_US.UTF-8"
+    LC_ALL: "en_US.UTF-8"
+  roles:
+    - gitlab

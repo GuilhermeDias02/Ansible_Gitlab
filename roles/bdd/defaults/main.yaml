@@ -1,0 +1,12 @@
+packages_postgresql:
+  - name: postgresql
+  - name: postgresql-client
+  - name: python3-psycopg
+
+db_names:
+  - name: all
+  - name: dev
+  - name: stage
+  - name: prod
+
+db_user: vagrant
